@@ -309,13 +309,13 @@ function RoomModal({ room, onClose, pushToast }) {
           <button className="btn" onClick={onClose}>Close</button>
           {pt ? (
             <>
-              <button className="btn">Transfer</button>
+              <button className="btn" onClick={() => { pushToast(`Transfer requested — ${pt.name}`, ""); onClose(); }}>Transfer</button>
               <button className="btn primary" disabled={!!bill} onClick={() => { pushToast(`Discharge processed — ${pt.name}`, "ok"); onClose(); }}>
                 {bill ? <><Icon name="lock" size={12}/> Discharge blocked</> : <><Icon name="check" size={13}/> Discharge</>}
               </button>
             </>
           ) : (
-            <button className="btn primary">Admit patient</button>
+            <button className="btn primary" onClick={() => { pushToast(`Admit flow opened for Room ${room.id}`, ""); onClose(); }}>Admit patient</button>
           )}
         </div>
       </div>

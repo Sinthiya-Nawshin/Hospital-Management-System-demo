@@ -185,11 +185,19 @@ input, select, textarea { font-family: inherit; }
 .topbar-left {
   display: flex; align-items: center; gap: 14px;
   color: var(--muted); font-size: 13px;
-  flex: 1; min-width: 0;
+  flex: 0 1 auto; min-width: 0;
 }
 .breadcrumb {
   display: flex; align-items: center; gap: 8px;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.breadcrumb > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .breadcrumb .crumb-active {
   color: var(--ink);
@@ -199,8 +207,12 @@ input, select, textarea { font-family: inherit; }
   color: var(--hairline-strong);
 }
 .topbar-search {
-  flex: 1;
+  flex: 1 1 320px;
   max-width: 420px;
+  min-width: 160px;
+  position: relative;
+  margin-left: auto;
+}
   position: relative;
   margin-left: auto;
 }
@@ -806,18 +818,25 @@ textarea.input { height: auto; padding: 8px 10px; resize: vertical; min-height: 
 .sched-event {
   position: absolute;
   left: 4px; right: 4px;
-  padding: 6px 8px;
+  padding: 4px 7px;
   border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-soft-ink);
   border-left: 3px solid var(--accent);
   font-size: 11.5px;
   font-weight: 500;
-  line-height: 1.3;
+  line-height: 1.25;
   overflow: hidden;
   cursor: pointer;
   z-index: 2;
   transition: transform .08s, box-shadow .12s;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.sched-event > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sched-event:hover {
   z-index: 4;
@@ -828,6 +847,13 @@ textarea.input { height: auto; padding: 8px 10px; resize: vertical; min-height: 
 .sched-event.type-procedure { background: var(--warn-soft); color: var(--warn-soft-ink); border-left-color: var(--warn); }
 .sched-event.type-urgent { background: var(--danger-soft); color: var(--danger-soft-ink); border-left-color: var(--danger); }
 .sched-event.type-checkup { background: var(--ok-soft); color: var(--ok-soft-ink); border-left-color: var(--ok); }
+
+.sched-event.compact {
+  padding: 2px 6px;
+  font-size: 10.5px;
+}
+.sched-event.compact .ev-time { font-size: 9.5px; }
+.sched-event.compact .ev-pt { font-size: 10.5px; font-weight: 600; }
 
 .sched-event .ev-time {
   font-family: var(--font-mono);
@@ -1144,4 +1170,14 @@ textarea.input { height: auto; padding: 8px 10px; resize: vertical; min-height: 
 @keyframes toastIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────── RESPONSIVE TOPBAR ─────────────────────── */
+@media (max-width: 1280px) {
+  .breadcrumb > span:first-child,
+  .breadcrumb > svg { display: none; }
+}
+@media (max-width: 960px) {
+  .topbar-search { display: none; }
+  .topbar-left { display: none; }
 }

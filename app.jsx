@@ -3,6 +3,7 @@
 const { useState: uS, useEffect: uE, useRef: uR } = React;
 
 function App() {
+  const [authed, setAuthed] = uS(() => localStorage.getItem("hms.authed") === "1");
   const [role, setRole] = uS(() => localStorage.getItem("hms.role") || "receptionist");
   const [page, setPage] = uS(() => localStorage.getItem("hms.page") || "dashboard");
   const [tweaksOn, setTweaksOn] = uS(false);
@@ -28,6 +29,15 @@ function App() {
     window.parent.postMessage({ type: "__edit_mode_available" }, "*");
     return () => window.removeEventListener("message", handler);
   }, []);
+
+  const signOut = () => {
+    localStorage.removeItem("hms.authed");
+    setAuthed(false);
+  };
+
+  if (!authed) {
+    return <Login onSuccess={(r) => { setRole(r); setAuthed(true); setPage("dashboard"); }}/>;
+  }
 
   const runScenario = (s) => {
     setScenarioOpen(false);
@@ -72,6 +82,7 @@ function App() {
         role={role} setRole={setRole} page={page} setPage={setPage}
         onOpenSearch={() => {}}
         onOpenScenarios={() => setScenarioOpen(true)}
+        onSignOut={signOut}
       />
       <Sidebar page={page} setPage={setPage} role={role}/>
       <main className="main">{renderPage()}</main>

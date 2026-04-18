@@ -59,7 +59,7 @@ function Brand() {
   );
 }
 
-function TopBar({ role, setRole, onOpenSearch, page, setPage, onOpenScenarios }) {
+function TopBar({ role, setRole, onOpenSearch, page, setPage, onOpenScenarios, onSignOut }) {
   const pageLabel = NAV.find(n => n.id === page)?.label || "";
   return (
     <div className="topbar">
@@ -91,13 +91,13 @@ function TopBar({ role, setRole, onOpenSearch, page, setPage, onOpenScenarios })
           <span className="dot"/>
         </button>
         <button className="icon-btn" title="Settings"><Icon name="settings" size={16}/></button>
-        <RoleSwitcher role={role} setRole={setRole}/>
+        <RoleSwitcher role={role} setRole={setRole} onSignOut={onSignOut}/>
       </div>
     </div>
   );
 }
 
-function RoleSwitcher({ role, setRole }) {
+function RoleSwitcher({ role, setRole, onSignOut }) {
   const [open, setOpen] = useState(false);
   const ref = useRef();
   useEffect(() => {
@@ -137,7 +137,7 @@ function RoleSwitcher({ role, setRole }) {
             </button>
           ))}
           <div style={{ borderTop: "1px solid var(--hairline)", margin: "6px 0" }}/>
-          <button style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "transparent", border: "none", borderRadius: 6, textAlign: "left", color: "var(--ink-2)", fontSize: 13 }}>
+          <button onClick={onSignOut} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", background: "transparent", border: "none", borderRadius: 6, textAlign: "left", color: "var(--ink-2)", fontSize: 13, cursor: "pointer" }}>
             <Icon name="logout" size={14}/> Sign out
           </button>
         </div>

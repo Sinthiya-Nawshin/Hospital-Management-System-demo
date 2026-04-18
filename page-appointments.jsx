@@ -3,7 +3,7 @@
 const BUSINESS_START = 0;      // 09:00
 const BUSINESS_END   = 8 * 60; // 17:00 = 480 min from 9
 const SLOT_MIN = 15;           // 15-min grid
-const SLOT_PX = 14;            // pixels per 15-min slot => 56px = 1 hour
+const SLOT_PX = 18;            // pixels per 15-min slot => 72px = 1 hour; 30-min = 36px (fits 2 lines)
 
 function dayLabel(offset) {
   const names = ["Mon","Tue","Wed","Thu","Fri"];
@@ -53,10 +53,16 @@ function Appointments({ role, pushToast, scenario, consumeScenario }) {
   };
 
   const commitAppt = (draft) => {
-    setAppts(xs => [...xs, { ...draft, id: "A-" + Math.floor(Math.random()*99000 + 10500), room: "AUTO" }]);
-    const pt = PATIENTS.find(p => p.id === draft.patientId);
-    const doc = DOCTORS.find(d => d.id === draft.doctorId);
-    pushToast(`Appointment booked — ${pt?.name} with ${doc?.name} at ${minToTime(draft.startMin)}`, "ok");
+    if (draft._rescheduling) {
+      setAppts(xs => xs.map(a => a.id === draft._rescheduling ? { ...a, day: draft.day, startMin: draft.startMin, dur: draft.dur, doctorId: draft.doctorId, type: draft.type, notes: draft.notes } : a));
+      const pt = PATIENTS.find(p => p.id === draft.patientId);
+      pushToast(`Appointment rescheduled — ${pt?.name} → ${dayLabel(draft.day).name} ${minToTime(draft.startMin)}`, "ok");
+    } else {
+      setAppts(xs => [...xs, { ...draft, id: "A-" + Math.floor(Math.random()*99000 + 10500), room: "AUTO" }]);
+      const pt = PATIENTS.find(p => p.id === draft.patientId);
+      const doc = DOCTORS.find(d => d.id === draft.doctorId);
+      pushToast(`Appointment booked — ${pt?.name} with ${doc?.name} at ${minToTime(draft.startMin)}`, "ok");
+    }
     setDraftModal(null);
   };
 
@@ -75,7 +81,7 @@ function Appointments({ role, pushToast, scenario, consumeScenario }) {
             <button className={view === "day" ? "on" : ""} onClick={() => setView("day")}>Day</button>
             <button className={view === "week" ? "on" : ""} onClick={() => setView("week")}>Week</button>
           </div>
-          <button className="btn"><Icon name="filter" size={13}/> Filter</button>
+          <button className="btn" onClick={() => pushToast("Filters: coming soon", "")}><Icon name="filter" size={13}/> Filter</button>
           <button className="btn primary" onClick={() => openBookingAt(todayIdx, 60, visibleDocs[0]?.id)}>
             <Icon name="plus" size={13}/> New appointment
           </button>
@@ -127,6 +133,15 @@ function Appointments({ role, pushToast, scenario, consumeScenario }) {
           appt={activeAppt}
           onClose={() => setActiveAppt(null)}
           onCheckIn={() => { pushToast(`Checked in — ${PATIENTS.find(p => p.id === activeAppt.patientId)?.name}`, "ok"); setActiveAppt(null); }}
+          onReschedule={() => {
+            setDraftModal({
+              day: activeAppt.day, startMin: activeAppt.startMin, dur: activeAppt.dur,
+              doctorId: activeAppt.doctorId, type: activeAppt.type,
+              patientId: activeAppt.patientId, notes: activeAppt.notes || "",
+              _rescheduling: activeAppt.id,
+            });
+            setActiveAppt(null);
+          }}
         />
       )}
     </div>
@@ -224,16 +239,18 @@ function Scheduler({ view, days, doctors, appts, todayIdx, nowMin, hoverCell, on
             const height = (a.dur / SLOT_MIN) * SLOT_PX - 2;
             const left = `calc(60px + ${dayIdx} * (100% - 60px) / ${days.length} + ${a._col} * ((100% - 60px) / ${days.length} / ${a._colCount}))`;
             const width = `calc((100% - 60px) / ${days.length} / ${a._colCount} - 4px)`;
+            const isCompact = height < 48;
             return (
               <div
                 key={a.id}
-                className={`sched-event ${APPT_TYPES[a.type]?.cls || ""}`}
+                className={`sched-event ${APPT_TYPES[a.type]?.cls || ""} ${isCompact ? "compact" : ""}`}
                 style={{ position: "absolute", top, height, left, width }}
                 onClick={(e) => { e.stopPropagation(); onApptClick(a); }}
+                title={`${minToTime(a.startMin)}–${minToTime(a.startMin + a.dur)} · ${pt?.name || ""} · ${doc?.name || ""}`}
               >
                 <div className="ev-time">{minToTime(a.startMin)} · {doc?.name.split(" ").slice(-1)[0]}</div>
-                <div className="ev-pt">{pt?.name}</div>
-                {height > 40 && (
+                {height >= 28 && <div className="ev-pt">{pt?.name}</div>}
+                {height > 52 && (
                   <div style={{ fontSize: 10.5, opacity: 0.75, marginTop: 2 }}>{APPT_TYPES[a.type]?.label} · {a.room}</div>
                 )}
               </div>
@@ -535,7 +552,7 @@ function BookingModal({ draft, setDraft, allAppts, onCommit, onCancel }) {
   );
 }
 
-function AppointmentDetailModal({ appt, onClose, onCheckIn }) {
+function AppointmentDetailModal({ appt, onClose, onCheckIn, onReschedule }) {
   const pt = PATIENTS.find(p => p.id === appt.patientId);
   const doc = DOCTORS.find(d => d.id === appt.doctorId);
   const dept = DEPARTMENTS.find(d => d.id === doc?.dept);
@@ -571,7 +588,7 @@ function AppointmentDetailModal({ appt, onClose, onCheckIn }) {
         </div>
         <div className="modal-footer">
           <button className="btn" onClick={onClose}>Close</button>
-          <button className="btn"><Icon name="edit" size={13}/> Reschedule</button>
+          <button className="btn" onClick={onReschedule}><Icon name="edit" size={13}/> Reschedule</button>
           <button className="btn primary" onClick={onCheckIn}>
             <Icon name="check" size={13}/> Check in
           </button>

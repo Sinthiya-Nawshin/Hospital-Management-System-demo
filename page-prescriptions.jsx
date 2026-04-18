@@ -58,7 +58,7 @@ function Prescriptions({ pushToast, scenario, consumeScenario }) {
           <p className="page-subtitle">Active safety check against patient allergies & interactions</p>
         </div>
         <div className="page-actions">
-          <button className="btn"><Icon name="download" size={13}/> Save draft</button>
+          <button className="btn" onClick={() => pushToast("Draft saved locally", "ok")}><Icon name="download" size={13}/> Save draft</button>
           <button className="btn primary" disabled={blockerCount > 0 || signing} onClick={sign}>
             {signing ? <><Icon name="refresh" size={13}/> Signing…</> :
              blockerCount > 0 ? <><Icon name="lock" size={13}/> Blocked ({blockerCount})</> :
@@ -162,8 +162,8 @@ function Prescriptions({ pushToast, scenario, consumeScenario }) {
                               Hospital policy prevents dispensing. Consult alternative in <b>{it.med?.class}</b> class or override with clinical justification.
                             </div>
                             <div style={{ marginTop: 8, display: "flex", gap: 6 }}>
-                              <button className="btn sm">Suggest alternative</button>
-                              <button className="btn sm">Request override</button>
+                              <button className="btn sm" onClick={() => pushToast(`Alternative suggested: same class (${it.med?.class}), no allergen match`, "")}>Suggest alternative</button>
+                              <button className="btn sm" onClick={() => pushToast("Override request sent to attending physician for review", "")}>Request override</button>
                               <button className="btn sm danger" onClick={() => setItems(xs => xs.filter((_,j) => j !== i))}>Remove</button>
                             </div>
                           </div>
